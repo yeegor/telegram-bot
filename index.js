@@ -57,15 +57,13 @@ bot.onText(/Бот, (.+), напомни (.+) в (.+)/,
             senderId
         });
 
-        notification.save((error, notification) => {
-            if(error) {
-                logError(error);
-                return console.error(error);
-            }
-            const { chat: { id }, from: { username } } = msg;
-            logMessage(`Memorized a message from ${username}`);
-            bot.sendMessage(id, 'Запомнил')
-        });
+        notification.save()
+            .then(() => {
+                const { chat: { id }, from: { username } } = msg;
+                logMessage(`Memorized a message from ${username}`);
+                bot.sendMessage(id, 'Запомнил')
+            })
+            .catch((err) => logError(err));
     }
 )
 
@@ -99,7 +97,9 @@ setInterval(() => {
             }
             docs.forEach((document) => {
                 sendNotifications(bot, document);
-                //Notification.deleteOne({})
+                Notification.deleteOne({_id: document.id})
+                    .then(() => logMessage(`Deleted a following message from the database : ${document}`))
+                    .catch((err) => logError(err));
             });
         }
     )
