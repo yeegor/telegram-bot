@@ -6,5 +6,6 @@ const CONNECTION_STRING = `mongodb+srv://${process.env.MONGO_USER}:${process.env
 module.exports = {
     CONNECTION_STRING,
     TOKEN: process.env.TOKEN,
-    ERROR_LOG_PATH: process.env.ERROR_LOG_PATH
+    ERROR_LOG_PATH: process.env.ERROR_LOG_PATH,
+    MESSAGE_LOG_PATH: process.env.MESSAGE_LOG_PATH
 }
