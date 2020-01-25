@@ -103,4 +103,4 @@ setInterval(() => {
         })
         .catch((err) => logError(err));
 
-}, 1000 * 60);
+}, 1000 * 30);
