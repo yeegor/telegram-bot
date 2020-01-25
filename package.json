@@ -4,8 +4,7 @@
   "description": "Telegram bot for daily purposes",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "monitor": "nodemon index.js"
+    "start": "nodemon index.js"
   },
   "repository": {
     "type": "git",

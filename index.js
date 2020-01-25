@@ -1,10 +1,14 @@
+// Node modules
 const TelegramBot = require('node-telegram-bot-api');
 const fs = require('fs');
 
+// Local imports
 const dateHelper = require('./helpers/date');
 
-const ERROR_LOG_PATH = './data/log.txt';
+// Getting data from .env
+const { CONNECTION_STRING, TOKEN, ERROR_LOG_PATH } = './config'
 
+// Connecting API
 const bot = new TelegramBot(TOKEN, { polling: true });
 
 console.clear();
