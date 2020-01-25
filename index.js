@@ -18,7 +18,8 @@ var db = mongoose.connection;
 // DB handlers
 db.on('error',
     error => {
-        console.error('DB connection error: ', error);
+        log(error);
+        return console.error('DB connection error: ', error);
     }
 );
 
@@ -29,7 +30,9 @@ db.on('open',
 // DB schema
 const schema = new mongoose.Schema({
     subject: String,
-    remindAt: Date
+    remindAt: Date,
+    chatId: Number,
+    senderId: Number
 });
 
 // DB notification model
@@ -39,11 +42,13 @@ var Notification = mongoose.model('Notification', schema);
 bot.onText(/Бот, (.+), напомни (.+) в (.+)/,
     (msg, match) => {
         const [fullMessageText, subject, date, time] = match;
-        console.log(dateHelper.parse(date, time));
-
+        console.log(msg);
+        const { chat: { id: chatId }, from: { id: senderId } } = msg;
         const notification = new Notification({
             subject,
-            remindAt: dateHelper.parse(date, time)
+            remindAt: dateHelper.parse(date, time),
+            chatId,
+            senderId
         });
 
         notification.save((error, notification) => {
@@ -63,3 +68,31 @@ bot.on('polling_error',
         return console.error(error);
     }
 )
+
+const sendNotification = (bot, document) => {
+    const { subject, chatId, senderId } = document;
+    const message = 'Напоминаю! ' + subject.charAt(0).toUpperCase() + subject.substring(1);
+    bot.sendMessage(chatId, message);
+    bot.sendMessage(senderId, '')
+}
+
+setInterval(() => {
+    console.log('Triggered');
+
+    const now = new Date();
+    now.setSeconds(0);
+    now.setMilliseconds(0);
+
+    Notification.find(
+        { remindAt: now },
+        (err, docs) => {
+            if(err) {
+                log(err);
+                return console.error(err);
+            }
+            docs.forEach((document) => {
+                sendNotification(bot, document);
+            });
+        }
+    )
+}, 1000 * 60)
