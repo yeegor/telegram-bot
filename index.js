@@ -57,13 +57,17 @@ bot.onText(/Бот, (.+), напомни (.+) в (.+)/,
             senderId
         });
 
-        notification.save()
+        const { chat: { id }, from: { username } } = msg;
+        // TODO: Implement timeout
+        return notification.save()
             .then(() => {
-                const { chat: { id }, from: { username } } = msg;
                 logMessage(`Memorized a message from ${username}`);
-                bot.sendMessage(id, 'Запомнил')
+                bot.sendMessage(id, 'Запомнил');
             })
-            .catch((err) => logError(err));
+            .catch((err) => {
+                logError(err);
+                bot.sendMessage(id, 'Не запомнил! У меня траблы, давай потом.');
+            });
     }
 )
 
@@ -82,25 +86,21 @@ const sendNotifications = (bot, document) => {
 }
 
 setInterval(() => {
-    logMessage('Triggered reminder check');
+    logMessage('Reminder check triggered');
 
     const now = new Date();
     now.setSeconds(0);
     now.setMilliseconds(0);
 
-    Notification.find(
-        { remindAt: now },
-        (err, docs) => {
-            if(err) {
-                logError(err);
-                return console.error(err);
-            }
+    Notification.find({ remindAt: now })
+        .then((docs) => {
             docs.forEach((document) => {
                 sendNotifications(bot, document);
                 Notification.deleteOne({_id: document.id})
                     .then(() => logMessage(`Deleted a following message from the database : ${document}`))
                     .catch((err) => logError(err));
             });
-        }
-    )
+        })
+        .catch((err) => logError(err));
+
 }, 1000 * 60);

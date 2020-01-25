@@ -6,7 +6,10 @@ function logError(error) {
     fs.appendFile(
         ERROR_LOG_PATH,
         `${new Date().toISOString()}: ${error}\n`,
-        () => console.error('Unable to write to log file')
+        (err) => {
+            if(err)
+                return console.error('Unable to write to error log file');
+        }
     );
 }
 
@@ -17,7 +20,7 @@ function logMessage(message) {
         `${new Date().toISOString()}: ${message}\n`,
         (err) => {
             if(err)
-                return console.error('Unable to write to message log file')
+                return console.error('Unable to write to message log file');
         }
     )
 }
