@@ -1,17 +1,34 @@
 // Node modules
+var fs = require('fs');
+var mongoose = require('mongoose');
 const TelegramBot = require('node-telegram-bot-api');
-const fs = require('fs');
 
 // Local imports
 const dateHelper = require('./helpers/date');
 
 // Getting data from .env
-const { CONNECTION_STRING, TOKEN, ERROR_LOG_PATH } = './config'
+const { CONNECTION_STRING, TOKEN, ERROR_LOG_PATH } = require('./config');
 
 // Connecting API
 const bot = new TelegramBot(TOKEN, { polling: true });
+mongoose.connect(CONNECTION_STRING, { useNewUrlParser: true });
+var db = mongoose.connection;
 
-console.clear();
+// DB handlers
+
+db.on('error',
+    error => {
+        console.error('DB connection error: ', error);
+    }
+);
+
+db.on('open',
+    () => {
+        console.log('IT IS OPEN');
+    }
+);
+
+// Bot handlers
 
 bot.on('message',
     msg => {
