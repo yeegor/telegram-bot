@@ -1,0 +1,24 @@
+{
+  "name": "telebot",
+  "version": "1.0.0",
+  "description": "Telegram bot for daily purposes",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "monitor": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/negzu/telegram-bot.git"
+  },
+  "author": "Jegors Batovs yegor.batov@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/negzu/telegram-bot/issues"
+  },
+  "homepage": "https://github.com/negzu/telegram-bot#readme",
+  "dependencies": {
+    "node-telegram-bot-api": "^0.40.0",
+    "nodemon": "^2.0.2"
+  }
+}
