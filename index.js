@@ -23,9 +23,7 @@ db.on('error',
 );
 
 db.on('open',
-    () => {
-        console.log('DB connection has been estabilished');
-    }
+    () => console.log('DB connection has been estabilished')
 );
 
 // DB schema
@@ -42,10 +40,12 @@ bot.onText(/Бот, (.+), напомни (.+) в (.+)/,
     (msg, match) => {
         const [fullMessageText, subject, date, time] = match;
         console.log(dateHelper.parse(date, time));
+
         const notification = new Notification({
             subject,
             remindAt: dateHelper.parse(date, time)
         });
+
         notification.save((error, notification) => {
             if(error) {
                 log(error);

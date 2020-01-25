@@ -1,7 +1,8 @@
 module.exports.parse = (inputDate, inputTime) => {
-    const date = inputDate.split('/');
-    const time = inputTime.split(':');
-    const [day, month, year] = date;
-    const [hours, minutes] = time;
-    return new Date(year, month, day, hours, minutes);
+    const dateArray = inputDate.split('/');
+    const timeArray = inputTime.split(':');
+    const [day, month, year] = dateArray;
+    const [hours, minutes] = timeArray;
+
+    return new Date(year, month - 1, day, hours, minutes);
 }
