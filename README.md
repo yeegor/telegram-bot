@@ -5,6 +5,8 @@ Telegram bot for daily purposes
 * [node.js](nodejs.org) v13.5.0
 * [node-telegram-bot-api](https://github.com/yagop/node-telegram-bot-api)
 * [i18n](https://github.com/mashpie/i18n-node)
+* [mongoose](https://mongoosejs.com/)
+* [mongoDB](https://cloud.mongodb.com)
 
 ### Description
 Simple telegram bot for daily purposes, implemented functions:
