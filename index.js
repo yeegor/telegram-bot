@@ -8,7 +8,7 @@ var dateHelper = require('./helpers/date');
 var { logError, logMessage } = require('./helpers/logger');
 
 // Getting data from .env
-const { CONNECTION_STRING, TOKEN } = require('./config');
+const { CONNECTION_STRING, TOKEN, i18n: { __ } } = require('./config');
 
 // Connecting API
 const bot = new TelegramBot(TOKEN, { polling: true });
@@ -19,12 +19,12 @@ var db = mongoose.connection;
 db.on('error',
     error => {
         logError(error);
-        return console.error('DB connection error: ', error);
+        return console.error(__('DB connection error: '), error);
     }
 );
 
 db.on('open',
-    () => logMessage('DB connection has been estabilished')
+    () => logMessage(__('DB connection has been estabilished'))
 );
 
 // DB schema
@@ -46,7 +46,7 @@ bot.onText(/Бот, (.+), напомни (.+) в (.+)/,
         const remindAt = dateHelper.parse(date, time);
 
         if(remindAt < new Date()){
-            bot.sendMessage(chatId, 'Не могу напомнить в прошлом, сами решайте свои проблемы');
+            bot.sendMessage(chatId, __('Cannot remind in the past, resolve your problems yourselves'));
             return;
         }
 
@@ -61,12 +61,12 @@ bot.onText(/Бот, (.+), напомни (.+) в (.+)/,
         // TODO: Implement timeout
         return notification.save()
             .then(() => {
-                logMessage(`Memorized a message from ${username}`);
-                bot.sendMessage(id, 'Запомнил');
+                logMessage(__('Memorized a message from %s', username));
+                bot.sendMessage(id, __('Memorized!'));
             })
             .catch((err) => {
                 logError(err);
-                bot.sendMessage(id, 'Не запомнил! У меня траблы, давай потом.');
+                bot.sendMessage(id, __('Did not memorize that, having troubles :('));
             });
     }
 )
@@ -74,7 +74,7 @@ bot.onText(/Бот, (.+), напомни (.+) в (.+)/,
 bot.onText(/Бот, привет/,
     (msg) => {
         const { chat: { id }, from: { username } } = msg;
-        bot.sendMessage(id, `Привет, @${username}`);
+        bot.sendMessage(id, __('Hello, @%s', username));
     }
 )
 
@@ -102,13 +102,13 @@ bot.on('polling_error',
 
 const sendNotifications = (bot, document) => {
     const { subject, chatId, senderId } = document;
-    const message = 'Напоминаю! ' + subject.charAt(0).toUpperCase() + subject.substring(1);
+    const message = __('I remind! ') + subject.charAt(0).toUpperCase() + subject.substring(1);
     bot.sendMessage(chatId, message);
     bot.sendMessage(senderId, message);
 }
 
 setInterval(() => {
-    logMessage('Reminder check triggered');
+    logMessage(__('Reminder check triggered'));
 
     const now = new Date();
     now.setSeconds(0);
@@ -119,7 +119,7 @@ setInterval(() => {
             docs.forEach((document) => {
                 sendNotifications(bot, document);
                 Notification.deleteOne({_id: document.id})
-                    .then(() => logMessage(`Deleted a following message from the database : ${document}`))
+                    .then(() => logMessage(__('Deleted a following message from the database : %s', document)))
                     .catch((err) => logError(err));
             });
         })
