@@ -39,7 +39,8 @@ const schema = new mongoose.Schema({
 var Notification = mongoose.model('Notification', schema);
 
 // Bot handlers
-bot.onText(/Бот, (.+), напомни (.+) в (.+)/,
+// TODO: fix regexp not triggering in english
+bot.onText(new RegExp(__('Bot, remind me of (.+) on (.+) at (.+)')),
     (msg, match) => {
         const [fullMessageText, subject, date, time] = match;
         const { chat: { id: chatId }, from: { id: senderId } } = msg;
@@ -119,7 +120,7 @@ setInterval(() => {
             docs.forEach((document) => {
                 sendNotifications(bot, document);
                 Notification.deleteOne({_id: document.id})
-                    .then(() => logMessage(__('Deleted a following message from the database : %s', document)))
+                    .then(() => logMessage(__('Deleted a following message from the database : %s', document.toString())))
                     .catch((err) => logError(err));
             });
         })
