@@ -1,0 +1,11 @@
+{
+    "Cannot remind in the past, resolve your problems yourselves": "Не могу напомнить в прошлом, решайте свои проблемы сами",
+	"DB connection has been estabilished": "Подключение к базе данных установлено",
+    "Deleted a following message from the database : %s": "Из базы удалено следующее сообщение: %s",
+    "Did not memorize that, having troubles :(": "Не запомнил, у меня траблы :(",
+    "Hello, @%s": "Привет, @%s",
+    "I remind! ": "Я напоминаю! ",
+    "Memorized a message from %s": "Запомнил сообщение от %s",
+    "Memorized!": "Запомнил!",
+    "Reminder check triggered": "Задействована проверка напоминаний"
+}
