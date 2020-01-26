@@ -71,6 +71,28 @@ bot.onText(/Бот, (.+), напомни (.+) в (.+)/,
     }
 )
 
+bot.onText(/Бот, привет/,
+    (msg) => {
+        const { chat: { id }, from: { username } } = msg;
+        bot.sendMessage(id, `Привет, @${username}`);
+    }
+)
+
+bot.onText(/@here/,
+    async (msg) => {
+        const { chat: { id }, from: { username: senderUsername } } = msg;
+        const adminList = await bot.getChatAdministrators(id);
+
+        const message = adminList.reduce((msg, current) => {
+            const { user: { username, is_bot } } = current;
+            if (is_bot || !username || username == senderUsername) return msg;
+            return msg + `@${username} `;
+        }, '');
+
+        bot.sendMessage(id, message);
+    }
+)
+
 bot.on('polling_error',
     error => {
         logError(error);
