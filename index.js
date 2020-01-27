@@ -67,7 +67,7 @@ bot.onText(new RegExp(__('Bot, remind me of (.+) on (.+) at (.+)')),
             })
             .catch((err) => {
                 logError(err);
-                bot.sendMessage(id, __('Did not memorize that, having troubles :('));
+                bot.sendMessage(id, __('Did not memorize that, having troubles 😭'));
             });
     }
 )
