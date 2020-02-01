@@ -87,7 +87,7 @@ bot.onText(/@here/,
         const message = adminList.reduce((msg, current) => {
             const { user: { username, is_bot } } = current;
             if (is_bot || !username || username == senderUsername) return msg;
-            return msg + `@${username} `;
+            return  `${msg} @${username}`;
         }, '');
 
         bot.sendMessage(id, message);
