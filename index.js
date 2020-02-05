@@ -127,3 +127,14 @@ setInterval(() => {
         .catch((err) => logError(err));
 
 }, 1000 * 30);
+
+deleteStickerFromChat = (message) => {
+    bot.deleteMessage(message.chat.id, message.message_id);
+    bot.sendMessage(message.chat.id, `${message.from.first_name ? message.from.first_name : message.from.username}: ${message.sticker.emoji}`);
+}
+
+bot.on('sticker',
+    (message) => {
+        setTimeout(deleteStickerFromChat, 1000 * 5, message);
+    }
+)
