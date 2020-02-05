@@ -1,4 +1,5 @@
 {
+    "Bot, hello": "Бот, привет",
     "Cannot remind in the past, resolve your problems yourselves": "Не могу напомнить в прошлом, решайте свои проблемы сами",
 	"DB connection has been estabilished": "Подключение к базе данных установлено",
     "Deleted a following message from the database : %s": "Из базы удалено следующее сообщение: %s",

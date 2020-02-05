@@ -72,7 +72,7 @@ bot.onText(new RegExp(__('Bot, remind me of (.+) on (.+) at (.+)')),
     }
 )
 
-bot.onText(/Бот, привет/,
+bot.onText(new RegExp(__('Bot, hello')),
     (msg) => {
         const { chat: { id }, from: { username } } = msg;
         bot.sendMessage(id, __('Hello, @%s', username));

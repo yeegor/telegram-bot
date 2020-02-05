@@ -1,4 +1,5 @@
 {
+    "Bot, hello": "Bot, hello",
     "Cannot remind in the past, resolve your problems yourselves": "Cannot remind in the past, resolve your problems yourselves",
 	"DB connection has been estabilished": "DB connection has been estabilished",
     "Deleted a following message from the database : %s": "Deleted a following message from the database : %s",
