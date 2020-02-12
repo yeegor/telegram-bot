@@ -8,5 +8,6 @@
     "Memorized a message from %s": "Memorized a message from %s",
     "Memorized!": "Memorized!",
     "Reminder check triggered": "Reminder check triggered",
-    "Bot, remind me of (.+) on (.+) at (.+)": "Bot, (.+), remind on (.+) at (.+)"
+    "Bot, remind me of (.+) on (.+) at (.+)": "Bot, (.+), remind on (.+) at (.+)",
+    "Fuck stickers": "Fuck stickers"
 }
