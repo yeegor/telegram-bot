@@ -4,11 +4,10 @@ var mongoose = require('mongoose');
 const TelegramBot = require('node-telegram-bot-api');
 
 // Local imports
-var dateHelper = require('./helpers/date');
 var { logError, logMessage } = require('./helpers/logger');
 
 // Getting data from .env
-const { CONNECTION_STRING, TOKEN, i18n: { __ } } = require('./config');
+const { CONNECTION_STRING, TOKEN } = require('./config');
 
 // Connecting API
 const bot = new TelegramBot(TOKEN, { polling: true });
@@ -19,12 +18,12 @@ var db = mongoose.connection;
 db.on('error',
     error => {
         logError(error);
-        return console.error(__('DB connection error: '), error);
+        return console.error(`Ошибка подключения к базе: ${error}`);
     }
 );
 
 db.on('open',
-    () => logMessage(__('DB connection has been estabilished'))
+    () => logMessage('Подключение к базе установлено')
 );
 
 // DB schema
@@ -39,15 +38,14 @@ const schema = new mongoose.Schema({
 var Notification = mongoose.model('Notification', schema);
 
 // Bot handlers
-// TODO: fix regexp not triggering in english
-bot.onText(new RegExp(__('Bot, remind me of (.+) on (.+) at (.+)')),
+bot.onText(/Бот, (?<subject>.+), напомни (?<day>\d\d?)(\.|\/)(?<month>\d\d?)(\.|\/)(?<year>\d\d\d\d) в (?<hours>\d\d?):(?<minutes>\d\d)/,
     (msg, match) => {
-        const [fullMessageText, subject, date, time] = match;
+        const { groups: { subject, year, month, day, hours, minutes } } = match;
         const { chat: { id: chatId }, from: { id: senderId } } = msg;
-        const remindAt = dateHelper.parse(date, time);
+        const remindAt = new Date(year, month - 1, day, hours, minutes);
 
         if(remindAt < new Date()){
-            bot.sendMessage(chatId, __('Cannot remind in the past, resolve your problems yourselves'));
+            bot.sendMessage(chatId,'Не могу напомнить в прошлом, сами решайте свои проблемы');
             return;
         }
 
@@ -62,12 +60,12 @@ bot.onText(new RegExp(__('Bot, remind me of (.+) on (.+) at (.+)')),
         // TODO: Implement timeout
         return notification.save()
             .then(() => {
-                logMessage(__('Memorized a message from %s', username));
-                bot.sendMessage(id, __('Memorized!'));
+                logMessage(`Запомнил сообщение от ${username}`);
+                bot.sendMessage(id, 'Запомнил!');
             })
             .catch((err) => {
                 logError(err);
-                bot.sendMessage(id, __('Did not memorize that, having troubles :('));
+                bot.sendMessage(id, 'Не запомнил, у меня проблемы 😔');
             });
     }
 )
@@ -75,7 +73,7 @@ bot.onText(new RegExp(__('Bot, remind me of (.+) on (.+) at (.+)')),
 bot.onText(/Бот, привет/,
     (msg) => {
         const { chat: { id }, from: { username } } = msg;
-        bot.sendMessage(id, __('Hello, @%s', username));
+        bot.sendMessage(id, `Hello, @${username}`);
     }
 )
 
@@ -103,25 +101,23 @@ bot.on('polling_error',
 
 const sendNotifications = (bot, document) => {
     const { subject, chatId, senderId } = document;
-    const message = __('I remind! ') + subject.charAt(0).toUpperCase() + subject.substring(1);
-    bot.sendMessage(chatId, message);
+    const message = `Я напоминаю! ${subject.charAt(0).toUpperCase()}${subject.substring(1)}`;
+    if(chatId !== senderId) bot.sendMessage(chatId, message);
     bot.sendMessage(senderId, message);
 }
 
 setInterval(() => {
-    logMessage(__('Reminder check triggered'));
-
     const now = new Date();
     now.setSeconds(0);
     now.setMilliseconds(0);
 
-    Notification.find({ remindAt: now })
+    Notification.find({ remindAt: { $lte: now } })
         .then((docs) => {
             docs.forEach((document) => {
                 sendNotifications(bot, document);
                 Notification.deleteOne({_id: document.id})
-                    .then(() => logMessage(__('Deleted a following message from the database : %s', document.toString())))
-                    .catch((err) => logError(err));
+                    .then(() => logMessage(`Удалил сообщение из базы : ${document.toString()}`))
+                    .catch(err => logError(err));
             });
         })
         .catch((err) => logError(err));

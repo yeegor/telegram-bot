@@ -18,7 +18,6 @@
   "homepage": "https://github.com/negzu/telegram-bot#readme",
   "dependencies": {
     "dotenv": "^8.2.0",
-    "i18n": "^0.8.4",
     "mongoose": "^5.8.9",
     "node-telegram-bot-api": "^0.40.0",
     "nodemon": "^2.0.2"
