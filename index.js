@@ -72,7 +72,7 @@ bot.onText(/Бот, (?<subject>.+), напомни (?<day>\d\d?)(\.|\/)(?<month>
 bot.onText(/Бот, привет/,
     (msg) => {
         const { chat: { id }, from: { username } } = msg;
-        bot.sendMessage(id, `Hello, @${username}`);
+        bot.sendMessage(id, `Привет, @${username}`);
     }
 )
 
@@ -148,6 +148,6 @@ bot.onText(/\/nahuy$/,
                     .then(() => stickerQueue.dequeue());
             }
         );
-        bot.sendMessage(commandMessage.chat.id, __('Fuck stickers'));
+        bot.sendMessage(commandMessage.chat.id, 'К чёрту стикеры');
     }
 )
