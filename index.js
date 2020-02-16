@@ -1,5 +1,4 @@
 // Node modules
-var fs = require('fs');
 var mongoose = require('mongoose');
 const TelegramBot = require('node-telegram-bot-api');
 
