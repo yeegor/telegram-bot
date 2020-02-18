@@ -3,10 +3,11 @@ var mongoose = require('mongoose');
 const TelegramBot = require('node-telegram-bot-api');
 
 // Local imports
-var { logError, logMessage } = require('./helpers/logger');
+var { logError, logMessage, clearLogs } = require('./helpers/logger');
+clearLogs();
 
 // Getting data from .env
-const { CONNECTION_STRING, TOKEN } = require('./config');
+const { CONNECTION_STRING, TOKEN, MAKEMEADMIN } = require('./config');
 
 // Connecting API
 const bot = new TelegramBot(TOKEN, { polling: true });
@@ -26,15 +27,21 @@ db.on('open',
 );
 
 // DB schema
-const schema = new mongoose.Schema({
+const notificationSchema = new mongoose.Schema({
     subject: String,
     remindAt: Date,
     chatId: Number,
     senderId: Number
 });
 
+const administratorSchema = new mongoose.Schema({
+    userId: Number,
+    userName: String
+});
+
 // DB notification model
-var Notification = mongoose.model('Notification', schema);
+const Notification = mongoose.model('Notification', notificationSchema);
+const Administrator = mongoose.model('Administrator', administratorSchema);
 
 // Bot handlers
 bot.onText(/Бот, (?<subject>.+), напомни (?<day>\d\d?)(\.|\/)(?<month>\d\d?)(\.|\/)(?<year>\d\d\d\d) в (?<hours>\d\d?):(?<minutes>\d\d)/,
@@ -100,9 +107,13 @@ bot.on('polling_error',
 
 // * Sticker killer functionality
 
+const capitalize = (text) => {
+    return `${text.charAt(0).toUpperCase()}${text.substring(1)}`;
+}
+
 const sendNotifications = (bot, document) => {
     const { subject, chatId, senderId } = document;
-    const message = `Я напоминаю! ${subject.charAt(0).toUpperCase()}${subject.substring(1)}`;
+    const message = `Я напоминаю! ${capitalize(subject)}`;
     if(chatId !== senderId) bot.sendMessage(chatId, message);
     bot.sendMessage(senderId, message);
 }
@@ -132,10 +143,51 @@ deleteStickerFromChat = (message) => {
 
 const Queue = require('./helpers/queue');
 var stickerQueue = new Queue;
+var autokill = false;
 
 bot.on('sticker',
     (message) => {
-        stickerQueue.enqueue(message);
+        if(!autokill) {
+            stickerQueue.enqueue(message);
+        }
+        else bot.deleteMessage(message.chat.id, message.message_id);
+    }
+)
+
+const isAdminOfBot = (id) => !!Administrator.find({ userId: { $eq: id } });
+
+bot.onText(/\/autokill$/,
+    (message) => {
+        if(!isAdminOfBot(message.from.id))
+            return bot.sendMessage(message.chat.id, `Это админская команда, а ты не админ, @${message.from.username}`);
+        autokill = !autokill;
+        if(autokill) {
+            bot.sendMessage(message.chat.id, 'Я буду удалять все стикеры сразу');
+        } else {
+            bot.sendMessage(message.chat.id, 'Я немного расслабился');
+        }
+    }
+)
+
+bot.onText(/\/makemeadmin$/,
+    async (message) => {
+        if (!MAKEMEADMIN) return;
+
+        const { from: { id: userId, first_name: userName } } = message;
+        const newAdmin = new Administrator({
+            userId,
+            userName
+        });
+
+        try{
+            await newAdmin.save();
+        } catch(err) {
+            logError(err);
+            bot.sendMessage(id, 'Что-то пошло не так, пока что ты не админ 😔');
+        }
+
+        logMessage(`Новый адмиин: ${userName}`);
+        bot.sendMessage(userId, 'Теперь ты админ! 🎉');
     }
 )
 
@@ -149,5 +201,15 @@ bot.onText(/\/nahuy$/,
             }
         );
         bot.sendMessage(commandMessage.chat.id, 'К чёрту стикеры');
+    }
+)
+
+bot.onText(/\/say (?<message>.+)/,
+    async (message, match) => {
+        const { chat: { id: chatId }, from: { username }, message_id } = message;
+        const { groups: { message: textToSend } } = match;
+        await bot.deleteMessage(chatId, message_id);
+        await bot.sendMessage(chatId, capitalize(textToSend));
+        logMessage(`${username} попросил меня сказать \'${textToSend}\'`);
     }
 )

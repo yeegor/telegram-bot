@@ -1,6 +1,11 @@
 const fs = require('fs');
 const { ERROR_LOG_PATH, MESSAGE_LOG_PATH } = require('../config');
 
+function clearLogs() {
+    fs.truncate(ERROR_LOG_PATH, 0, () => {});
+    fs.truncate(MESSAGE_LOG_PATH, 0, () => {});
+}
+
 function logError(error) {
     console.error(error);
     fs.appendFile(
@@ -25,5 +30,6 @@ function logMessage(message) {
 
 module.exports = {
     logError,
-    logMessage
+    logMessage,
+    clearLogs
 }
