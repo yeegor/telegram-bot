@@ -45,7 +45,7 @@ const Administrator = mongoose.model('Administrator', administratorSchema);
 
 // Bot handlers
 bot.onText(/Бот, (?<subject>.+), напомни (?<day>\d\d?)(\.|\/)(?<month>\d\d?)(\.|\/)(?<year>\d\d\d\d) в (?<hours>\d\d?):(?<minutes>\d\d)/,
-    (msg, match) => {
+    async (msg, match) => {
         const { groups: { subject, year, month, day, hours, minutes } } = match;
         const { chat: { id: chatId }, from: { id: senderId } } = msg;
         const remindAt = new Date(year, month - 1, day, hours, minutes);
@@ -64,15 +64,14 @@ bot.onText(/Бот, (?<subject>.+), напомни (?<day>\d\d?)(\.|\/)(?<month>
 
         const { chat: { id }, from: { username } } = msg;
         // TODO: Implement timeout
-        return notification.save()
-            .then(() => {
-                logMessage(`Запомнил сообщение от ${username}`);
-                bot.sendMessage(id, 'Запомнил!');
-            })
-            .catch((err) => {
-                logError(err);
-                bot.sendMessage(id, 'Не запомнил, у меня проблемы 😔');
-            });
+        try{
+            await notification.save();
+        } catch(err) {
+            logError(err);
+            bot.sendMessage(id, 'Не запомнил, у меня проблемы 😔');
+        }
+        logMessage(`Запомнил сообщение от ${username}`);
+        bot.sendMessage(id, 'Запомнил!');
     }
 )
 
@@ -118,21 +117,23 @@ const sendNotifications = (bot, document) => {
     bot.sendMessage(senderId, message);
 }
 
-setInterval(() => {
+setInterval(async () => {
     const now = new Date();
     now.setSeconds(0);
     now.setMilliseconds(0);
+    let docs;
+    try{
+        docs = await Notification.find({ remindAt: { $lte: now } });
+    } catch(err) {
+        logError(err)
+    }
 
-    Notification.find({ remindAt: { $lte: now } })
-        .then((docs) => {
-            docs.forEach((document) => {
-                sendNotifications(bot, document);
-                Notification.deleteOne({_id: document.id})
-                    .then(() => logMessage(`Удалил сообщение из базы : ${document.toString()}`))
-                    .catch(err => logError(err));
-            });
-        })
-        .catch((err) => logError(err));
+    docs.forEach((document) => {
+        sendNotifications(bot, document);
+        Notification.deleteOne({_id: document.id})
+            .then(() => logMessage(`Удалил сообщение из базы : ${document.toString()}`))
+            .catch(err => logError(err));
+    });
 
 }, 1000 * 30);
 
@@ -195,9 +196,9 @@ bot.onText(/\/nahuy$/,
     (commandMessage) => {
         bot.deleteMessage(commandMessage.chat.id, commandMessage.message_id);
         stickerQueue.forEach(
-            message => {
-                bot.deleteMessage(message.chat.id, message.message_id)
-                    .then(() => stickerQueue.dequeue());
+            async message => {
+                await bot.deleteMessage(message.chat.id, message.message_id);
+                stickerQueue.dequeue();
             }
         );
         bot.sendMessage(commandMessage.chat.id, 'К чёрту стикеры');
